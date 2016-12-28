@@ -39,26 +39,21 @@ public:
     :
     // Allocates the number of controllers in a heap block
     aControllerIsConnected(false),
-    controllers(controllerCount = psmove_count_connected())/*,
+    controllers(controllerCount = psmove_count_connected())
+    /*,
     controllersTrackingToggle(controllerCount)*/
     
     {
+    
         
-        // Setup Window
-        setSize (800, 600);
-        
-        // Setup GUI
-        /*for (int i = 0; i < controllerCount; ++i)
-        {
-            addAndMakeVisible(controllersTrackingToggle[i]);
-            controllersTrackingToggle[i].initializeWithId(i);
-        }*/
-        
+    
+        /*
         trackingToggle1.initializeWithId(0);
         addAndMakeVisible(trackingToggle1);
         
         trackingToggle2.initializeWithId(1);
         addAndMakeVisible(trackingToggle2);
+         */
         
         
         // Check Correct Library Version
@@ -113,9 +108,37 @@ public:
                 }
             }
             
+            std::cout << "Controller Count: " << controllerCount << '\n';
+            
+            // Setup GUI
+            // Allocate memory for TrackingToggles
+            for (int i = 0; i < controllerCount; ++i)
+            {
+                trackingToggles.add(new TrackingToggle());
+            }
+            
+            // Initialize and add to this component
+            for (int i = 0; i < controllerCount; ++i)
+            {
+                trackingToggles[i]->initializeWithId(i);
+                addAndMakeVisible(trackingToggles[i]);
+            }
+            
+            // This access throws a BAD ACCESS ???
+            // AM I USING HEAPBLOCK WRONG???
+            // With new() delete, no bad access is thrown, but the GUI will not
+            // show up at all??
+            //controllersTrackingToggle[0].initializeWithId(0);
+            
             // Begin Processing PSMove & Tracker Data (repeatedly calls hiResTimerCallback()
             startTimer(1); // 1 milisecond intervals
         }
+        
+        
+        
+        // Setup Window (call this last because it calls resize()), we must
+        // allocate memory for the GUI elements before calling rezise
+        setSize (800, 600);
         
         
         // OLD VERSION
@@ -254,14 +277,15 @@ public:
             
             
             // Output MIDI Data
-            /*if (controllersTrackingToggle[i].shouldTrackX())
-                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + (i * 3), xTrack));
-            if (controllersTrackingToggle[i].shouldTrackY())
-                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + 1 + (i * 3), yTrack));
-            if (controllersTrackingToggle[i].shouldTrackR())
-                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + 2 + (i * 3), rTrack));
-        */
             
+            if (trackingToggles[i]->shouldTrackX())
+                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + (i * 3), xTrack));
+            if (trackingToggles[i]->shouldTrackY())
+                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + 1 + (i * 3), yTrack));
+            if (trackingToggles[i]->shouldTrackR())
+                midiOutput->sendMessageNow(MidiMessage::controllerEvent(1, startMapCC + 2 + (i * 3), rTrack));
+            
+            /*
             if (i == 0)
             {
                 if (trackingToggle1.shouldTrackX())
@@ -286,6 +310,8 @@ public:
             else
             {
             }
+             */
+            
             
             
         }
@@ -329,16 +355,22 @@ public:
         
         Rectangle<int> trackingToggleBound(getWidth() / 3, 90);
         
-        /*for (int i = 0; i < controllerCount; ++i)
-        {
-            controllersTrackingToggle[i].setBounds (trackingToggleBound.reduced(10));
-            trackingToggleBound.translate(0, 90);
-        }*/
         
+        if (aControllerIsConnected)
+        {
+            for (int i = 0; i < controllerCount; ++i)
+            {
+                trackingToggles[i]->setBounds (trackingToggleBound.reduced(10));
+                trackingToggleBound.translate(0, 90);
+            }
+        }
+        
+        /*
         
         trackingToggle1.setBounds (trackingToggleBound.reduced(10));
         trackingToggleBound.translate(0, 90);
         trackingToggle2.setBounds (trackingToggleBound.reduced(10));
+        */
         
     }
     
@@ -373,8 +405,10 @@ private:
     // FOR SOME REASON THIS KEEPS ERRORING OUT, I HAVE NO IDEA
     //HeapBlock<TrackingToggle, true> controllersTrackingToggle;
     
-    TrackingToggle trackingToggle1;
-    TrackingToggle trackingToggle2;
+    OwnedArray<TrackingToggle> trackingToggles;
+    
+    //TrackingToggle trackingToggle1;
+    //TrackingToggle trackingToggle2;
     
     
     //TrackingToggle firstControllerToggle;

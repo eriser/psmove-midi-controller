@@ -39,9 +39,8 @@ public:
         controllerId = id;
         
         String idString(id);
-        String title;
+        String title("Controller " + idString + " - Track X");
         
-        title = "Controller " + idString + " - Track X";
         trackXButton.setButtonText (title);
         trackYButton.setButtonText (title.replaceSection ((title.length() - 1), 1, "Y"));
         trackRButton.setButtonText (title.replaceSection ((title.length() - 1), 1, "R"));
@@ -81,13 +80,15 @@ public:
     }
     
     void paint (Graphics& g) override
-    {
-    }
+    {}
     
 private:
     int controllerId;
     TextButton trackXButton, trackYButton, trackRButton;
     bool trackX, trackY, trackR;
+    
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrackingToggle)
 };
 
 
